@@ -25,5 +25,6 @@ vignettes/*.pdf
 .Rproj.user
 Picasso.Rproj
 # paintings
-/*
-
+pics/*
+pics.zip
+paintings.RDS
