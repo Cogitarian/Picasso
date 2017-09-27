@@ -41,7 +41,7 @@ paintings <- paintings_list %>%
 # pobieramy wszystkie obrazy
 download_paint <- function(paint) {
    # url do obrazu
-   paint_url <- URLencode(as.character(paint$image))
+   paint_url <- URLencode(as.character(paint))
 
    # ścieżka do pliku lokalnego
    # () zamienione na _
@@ -56,7 +56,9 @@ download_paint <- function(paint) {
 
 # dla każdego wiersza wywołaj funkcję i wynik jej działania umieść w kolumnie "path"
 paintings <- paintings %>%
-   by_row(download_paint, .collate = "cols", .to = "path")
+   rowwise() %>%
+   mutate(path = download_paint(image)) %>%
+   ungroup()
 
 # zapisz listę obrazów na dysku
 saveRDS(paintings, file = "paintings.RDS")
