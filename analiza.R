@@ -2,7 +2,9 @@ library(tidyverse)
 library(jpeg)
 library(reshape2)
 
-file <- "pics/female-nude-in-the-garden-1934.jpg"
+file <- "pics/the-girls-of-avignon-1907.jpg"
+
+file <- "pics/guernica-by-pablo-picasso.jpg"
 picture <- readJPEG(file)
 
 dim(picture)
@@ -25,10 +27,16 @@ image.df <- image.df %>%
    mutate(R = round(R * 255),
           G = round(G * 255),
           B = round(B * 255)) %>%
-   mutate(RGB_hex = sprintf("#%02X%02X%02X", R, G, B))
+   mutate(RGB_hex = sprintf("#%02X%02X%02X", R, G, B)) %>%
+   # przeskalowanie dla szybszych późniejszych obliczeń
+   filter(x %% 5 == 0) %>%
+   filter(y %% 5 == 0) %>%
+   mutate(x = x %/% 5, y = y %/% 5)
 
+dimx <- max(image.df$x)
+dimy <- max(image.df$y)
 
-image_df_kmeans <- kmeans(image.df[, c("R", "G", "B")], 16)
+image_df_kmeans <- kmeans(image.df[, c("R", "G", "B")], 8)
 
 image.df_centers <- image_df_kmeans$centers %>%
    round(0) %>%
@@ -71,10 +79,10 @@ image.df_all %>%
 
 # to view image after color quantization - unncomment below lines
 # # reconstitute the segmented image in the same shape as the input image
-image.segmented <- array(dim=dims)
-image.segmented[,,1] <- matrix(image.df_all$R_kmeans, nrow=dims[1])
-image.segmented[,,2] <- matrix(image.df_all$G_kmeans, nrow=dims[1])
-image.segmented[,,3] <- matrix(image.df_all$B_kmeans, nrow=dims[1])
+image.segmented <- array(dim=c(dimx, dimy, 3))
+image.segmented[,,1] <- matrix(image.df_all$R_kmeans, nrow=dimx)
+image.segmented[,,2] <- matrix(image.df_all$G_kmeans, nrow=dimx)
+image.segmented[,,3] <- matrix(image.df_all$B_kmeans, nrow=dimx)
 image.segmented <- image.segmented/255
 
 # View the result
@@ -90,12 +98,12 @@ normalize <- function(x) {
    return((x-min(x))/(max(x)-min(x)))
 }
 
-pca <- normalize(pca)
+pca <- normalize(round(pca))
 
-image.pca <- array(dim=dims)
-image.pca[,,1] <- matrix(pca[, 1], nrow=dims[1])
-image.pca[,,2] <- matrix(pca[, 2], nrow=dims[1])
-image.pca[,,3] <- matrix(pca[, 3], nrow=dims[1])
+image.pca <- array(dim=c(dimx, dimy, 3))
+image.pca[,,1] <- matrix(pca[, 1], nrow=dimx)
+image.pca[,,2] <- matrix(pca[, 2], nrow=dimx)
+image.pca[,,3] <- matrix(pca[, 3], nrow=dimx)
 
 # View the result
 plot.new()
