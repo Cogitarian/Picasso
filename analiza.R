@@ -100,7 +100,11 @@ normalize <- function(x) {
 
 pca <- normalize(round(pca))
 
+<<<<<<< HEAD
 image.pca <- array(dim=c(dimx, dimy, 3))
+=======
+image.pca <- array(dim==c(dimx, dimy, 3))
+>>>>>>> 0bae33bb4007bbd5a4fdcf9b36ec492795ae6d88
 image.pca[,,1] <- matrix(pca[, 1], nrow=dimx)
 image.pca[,,2] <- matrix(pca[, 2], nrow=dimx)
 image.pca[,,3] <- matrix(pca[, 3], nrow=dimx)
