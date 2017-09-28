@@ -2,9 +2,15 @@ library(tidyverse)
 library(jpeg)
 library(reshape2)
 
+
+picture_scale <- 5
+n_clusters <- 8
+
+
 file <- "pics/the-girls-of-avignon-1907.jpg"
 
-file <- "pics/guernica-by-pablo-picasso.jpg"
+file <- "pics/a-boy-with-pipe-1905.jpg"
+
 picture <- readJPEG(file)
 
 dim(picture)
@@ -12,6 +18,7 @@ dims <- dim(picture)
 
 plot.new()
 rasterImage(picture, 0, 0, 1, 1)
+
 
 
 image.R <- melt(picture[,,1])
@@ -29,14 +36,14 @@ image.df <- image.df %>%
           B = round(B * 255)) %>%
    mutate(RGB_hex = sprintf("#%02X%02X%02X", R, G, B)) %>%
    # przeskalowanie dla szybszych późniejszych obliczeń
-   filter(x %% 5 == 0) %>%
-   filter(y %% 5 == 0) %>%
-   mutate(x = x %/% 5, y = y %/% 5)
+   filter(x %% picture_scale == 0) %>%
+   filter(y %% picture_scale == 0) %>%
+   mutate(x = x %/% picture_scale, y = y %/% picture_scale)
 
 dimx <- max(image.df$x)
 dimy <- max(image.df$y)
 
-image_df_kmeans <- kmeans(image.df[, c("R", "G", "B")], 8)
+image_df_kmeans <- kmeans(image.df[, c("R", "G", "B")], n_clusters)
 
 image.df_centers <- image_df_kmeans$centers %>%
    round(0) %>%
@@ -49,32 +56,44 @@ image.df_all <- image.df %>%
    mutate(cluster = image_df_kmeans$cluster) %>%
    left_join(image.df_centers, by = "cluster")
 
+rm(image.df, image.df_centers, image_df_kmeans)
 
 head(image.df_all)
 
-popular_colors <- image.df_all %>%
-   count(RGB_hex) %>%
-   ungroup() %>%
-   top_n(32, n) %>%
-   arrange(n)
+# popular_colors <- image.df_all %>%
+#    count(RGB_hex) %>%
+#    ungroup() %>%
+#    top_n(n_clusters, n)
+#
+# popular_colors
+#
+# popular_colors_palete <- as.character(popular_colors$RGB_hex)
+# names(popular_colors_palete) <- as.character(popular_colors$RGB_hex)
+#
+#
+# popular_colors %>%
+#    ggplot() +
+#    geom_bar(aes(RGB_hex, n, fill = RGB_hex), stat="identity", show.legend = TRUE) +
+#    coord_flip() +
+#    scale_fill_manual(values = popular_colors_palete)
+#
 
-popular_colors_palete <- as.character(popular_colors$RGB_hex)
-names(popular_colors_palete) <- as.character(popular_colors$RGB_hex)
 
 
-popular_colors %>%
-   mutate(RGB_hex = factor(RGB_hex, levels = RGB_hex)) %>%
-   ggplot() +
-   geom_col(aes(RGB_hex, n, fill = RGB_hex), show.legend = TRUE) +
-   coord_flip() +
-   scale_fill_manual(values = popular_colors_palete)
-
-
-image.df_all %>%
+popular_colors_kmeans <- image.df_all %>%
    count(RGB_kmeans_hex) %>%
    ungroup() %>%
-   top_n(32) %>%
    arrange(desc(n))
+
+popular_colors_kmeans
+
+popular_colors_kmeans_palete <- as.character(popular_colors_kmeans$RGB_kmeans_hex)
+names(popular_colors_kmeans_palete) <- as.character(popular_colors_kmeans$RGB_kmeans_hex)
+
+
+ggplot(popular_colors_kmeans) +
+   geom_col(aes(RGB_kmeans_hex, n, fill = RGB_kmeans_hex)) +
+   scale_fill_manual(values = popular_colors_kmeans_palete)
 
 
 # to view image after color quantization - unncomment below lines
@@ -90,7 +109,17 @@ plot.new()
 rasterImage(image.segmented, 0, 0, 1, 1)
 
 
-pca <- princomp(image.df_all[, c("R", "G", "B")])
+pca <- princomp(image.df_all[, c("x", "y", "R", "G", "B")])
+
+plot(pca)
+
+pca$scores %>%
+   as_data_frame() %>%
+   ggplot() +
+   geom_point(aes(Comp.1, Comp.2, color = Comp.3)) +
+   scale_fill_gradient(low = "green", high = "red")
+
+
 pca <- pca$scores
 colnames(pca) <- c("PC1", "PC2", "PC3")
 
