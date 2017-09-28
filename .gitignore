@@ -28,3 +28,4 @@ Picasso.Rproj
 pics/*
 pics.zip
 paintings.RDS
+kmeans_colors.RDS

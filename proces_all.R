@@ -45,7 +45,7 @@ kmeans_colors <- data_frame()
 
 for(i in 1:nrow(paintings)) {
 
-   cat(paste0("\rObraz (", i, "/", nrow(paintings), "): \"",
+   cat(paste0("\nObraz (", i, "/", nrow(paintings), "): \"",
               as.character(paintings[i, "title"]),
               "\"  plik: ", as.character(paintings[i, "path"])))
 
@@ -61,7 +61,7 @@ for(i in 1:nrow(paintings)) {
    kmeans_colors <- kmeans_colors %>% bind_rows(tmp_df)
 
    # zapisanie co 20 obrazów
-   if(i %% 20 == 0) saveRDS(kmeans_colors, file = "kmeans_colors.RDS")
+   if(i %% 10 == 0) saveRDS(kmeans_colors, file = "kmeans_colors.RDS")
 }
 
 
