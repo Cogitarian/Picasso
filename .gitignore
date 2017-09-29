@@ -29,3 +29,5 @@ pics/*
 pics.zip
 paintings.RDS
 kmeans_colors.RDS
+blog_post.html
+blog_post_files/*
